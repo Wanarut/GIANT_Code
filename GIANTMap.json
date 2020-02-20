@@ -1,0 +1,199 @@
+{
+ "version": "application/octet-stream",
+ "allow_edit": true,
+ "plugins": [],
+ "panes": [
+  {
+   "title": "GIANT Project",
+   "width": 1,
+   "row": {
+    "2": 1,
+    "3": 1
+   },
+   "col": {
+    "2": 1,
+    "3": 1
+   },
+   "col_width": 1,
+   "widgets": [
+    {
+     "type": "text_widget",
+     "settings": {
+      "size": "big",
+      "value": "GIANT",
+      "sparkline": true,
+      "animate": true
+     }
+    },
+    {
+     "type": "Button",
+     "settings": {
+      "caption": "MOVE",
+      "text": "เคลื่อนที่ต่อไป",
+      "color": "green",
+      "onClick": "json = { \"dst\":91, \"cod\":1 }\nmicrogear[\"GIANTGateway\"].chat(\"GIANTGateway\", json)"
+     }
+    },
+    {
+     "type": "Button",
+     "settings": {
+      "caption": "STAY",
+      "text": "ห้ามออกนอกพื้นที่",
+      "color": "blue",
+      "onClick": "json = { \"dst\":91, \"cod\":7 }\nmicrogear[\"GIANTGateway\"].chat(\"GIANTGateway\", json)"
+     }
+    }
+   ]
+  },
+  {
+   "title": "SYSTEM",
+   "width": 1,
+   "row": {
+    "2": 1,
+    "3": 1
+   },
+   "col": {
+    "2": 2,
+    "3": 2
+   },
+   "col_width": 1,
+   "widgets": [
+    {
+     "type": "indicator",
+     "settings": {
+      "title": "",
+      "value": "datasources[\"CenterData\"][\"cod\"]!=8",
+      "on_text": "Operation Status",
+      "off_text": "Operation Status"
+     }
+    },
+    {
+     "type": "Toggle",
+     "settings": {
+      "caption": "Operation",
+      "state": "datasources[\"CenterData\"][\"cod\"]!=8",
+      "ontext": "Start",
+      "offtext": "Finish",
+      "onaction": "json = { \"dst\":255, \"cod\":9 }; microgear[\"GIANTGateway\"].chat(\"GIANTGateway\", json);",
+      "offaction": "json = { \"dst\":255, \"cod\":8 }; microgear[\"GIANTGateway\"].chat(\"GIANTGateway\", json);"
+     }
+    },
+    {
+     "type": "Button",
+     "settings": {
+      "caption": "BEWARE",
+      "text": "ระวังดับเพลิงอากาศ",
+      "color": "yellow",
+      "onClick": "json = { \"dst\":91, \"cod\":5 }\nmicrogear[\"GIANTGateway\"].chat(\"GIANTGateway\", json)"
+     }
+    },
+    {
+     "type": "Button",
+     "settings": {
+      "caption": "RESCUE",
+      "text": "ช่วยชีวิตด่วน",
+      "color": "red",
+      "onClick": "var status = datasources[\"91StationData\"][\"status\"]\nvar code = datasources[\"CenterData\"][\"cod\"]\nif (code != 15 && status == 2) {\n    lat = datasources[\"91StationData\"][\"latitude\"];\n    lon = datasources[\"91StationData\"][\"longitude\"];\n    json = { \"dst\":255, \"cod\":15, \"lat\":lat, \"lon\":lon };\n    microgear[\"GIANTGateway\"].chat(\"GIANTGateway\", json)\n}"
+     }
+    }
+   ]
+  },
+  {
+   "title": "Selected Device",
+   "width": 1,
+   "row": {
+    "2": 17,
+    "3": 1
+   },
+   "col": {
+    "2": 1,
+    "3": 3
+   },
+   "col_width": 1,
+   "widgets": [
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Device Name",
+      "size": "regular",
+      "value": "Hotshot Alpha Team",
+      "animate": true
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Team Status",
+      "value": "datasources[\"91StationData\"][\"status\"]",
+      "min_value": 0,
+      "max_value": "2"
+     }
+    }
+   ]
+  },
+  {
+   "title": "Tracking Map",
+   "width": 1,
+   "row": {
+    "2": 57,
+    "3": 11
+   },
+   "col": {
+    "2": 1,
+    "3": 1
+   },
+   "col_width": "3",
+   "widgets": [
+    {
+     "type": "longdo map",
+     "settings": {
+      "lat": "datasources[\"91StationData\"][\"latitude\"]",
+      "lon": "datasources[\"91StationData\"][\"longitude\"]",
+      "zoom": "16",
+      "style": "map",
+      "traffic": false,
+      "toolbar": true,
+      "height_block": "6"
+     }
+    }
+   ]
+  }
+ ],
+ "datasources": [
+  {
+   "name": "91StationData",
+   "type": "JSON",
+   "settings": {
+    "name": "91StationData",
+    "url": "https://gianttable.firebaseio.com/now/91Weather.json",
+    "use_thingproxy": true,
+    "refresh": 3,
+    "method": "GET"
+   }
+  },
+  {
+   "name": "GIANTGateway",
+   "type": "netpie_microgear",
+   "settings": {
+    "name": "GIANTGateway",
+    "appid": "GIANT",
+    "key": "jmcelnYHZMPXPvo",
+    "secret": "8tuJjmr1l2zm4j1QLcvlyJXt3",
+    "topics": "/#"
+   }
+  },
+  {
+   "name": "CenterData",
+   "type": "JSON",
+   "settings": {
+    "name": "CenterData",
+    "url": "https://gianttable.firebaseio.com/now/CenterData.json",
+    "use_thingproxy": true,
+    "refresh": 1,
+    "method": "GET"
+   }
+  }
+ ],
+ "columns": 3,
+ "theme": "default"
+}

@@ -1,0 +1,784 @@
+{
+ "version": "application/octet-stream",
+ "allow_edit": true,
+ "plugins": [],
+ "panes": [
+  {
+   "title": "GIANT Project",
+   "width": 1,
+   "row": {
+    "2": 1,
+    "3": 1
+   },
+   "col": {
+    "2": 1,
+    "3": 1
+   },
+   "col_width": 1,
+   "widgets": [
+    {
+     "type": "picture",
+     "settings": {
+      "src": "https://scontent-kut2-1.xx.fbcdn.net/v/t1.15752-9/83735423_614542045998537_3530927824183492608_n.png?_nc_cat=108&_nc_oc=AQkp8qHAyjX9W-Zjf7dzBHDBfH0_f3meJZbFSiSCLz7yFmFP2M-QGG8E6HWurKtMQ9I&_nc_ht=scontent-kut2-1.xx&oh=7bf2e9c749911fff2d3c5226013b12b7&oe=5ECE8D5D",
+      "refresh": 0
+     }
+    },
+    {
+     "type": "Button",
+     "settings": {
+      "caption": "MOVE",
+      "text": "เคลื่อนที่ต่อไป",
+      "color": "green",
+      "onClick": "json = { \"dst\":91, \"cod\":1 }\nmicrogear[\"GIANTGateway\"].chat(\"GIANTGateway\", json)"
+     }
+    },
+    {
+     "type": "Button",
+     "settings": {
+      "caption": "STAY",
+      "text": "ห้ามออกนอกพื้นที่",
+      "color": "blue",
+      "onClick": "json = { \"dst\":91, \"cod\":7 }\nmicrogear[\"GIANTGateway\"].chat(\"GIANTGateway\", json)"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Distance",
+      "size": "regular",
+      "value": "Number.prototype.toRad = function() {\n   return this * Math.PI / 180;\n}\n\nvar lat2 = datasources[\"91StationData\"][\"latitude\"];\nvar lon2 = datasources[\"91StationData\"][\"longitude\"];\nvar lat1 = datasources[\"93StationData\"][\"latitude\"];\nvar lon1 = datasources[\"93StationData\"][\"longitude\"];\n//var lat2 = 18.787910;\n//var lon2 = 98.949275;\n//var lat1 = 18.795402;\n//var lon1 = 98.953029;\n\nvar R = 6371000; // m\n//has a problem with the .toRad() method below.\nvar x1 = lat2-lat1;\nvar dLat = x1.toRad();\nvar x2 = lon2-lon1;\nvar dLon = x2.toRad();  \nvar a = Math.sin(dLat/2) * Math.sin(dLat/2) + \n                Math.cos(lat1.toRad()) * Math.cos(lat2.toRad()) * \n                Math.sin(dLon/2) * Math.sin(dLon/2);  \nvar c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); \nvar d = R * c; \n\nreturn d.toPrecision(6);",
+      "animate": true,
+      "units": "Meters"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "JSON DATA",
+      "size": "regular",
+      "value": "var json = datasources[\"CenterData\"];\nreturn JSON.stringify(json)",
+      "sparkline": false,
+      "animate": true
+     }
+    }
+   ]
+  },
+  {
+   "title": "SYSTEM",
+   "width": 1,
+   "row": {
+    "2": 1,
+    "3": 1
+   },
+   "col": {
+    "2": 2,
+    "3": 2
+   },
+   "col_width": 1,
+   "widgets": [
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "DATE",
+      "size": "regular",
+      "value": "datasources[\"MainClock\"][\"date_string_value\"]",
+      "animate": true,
+      "units": "Month/Day/Year"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "TIME",
+      "size": "regular",
+      "value": "datasources[\"MainClock\"][\"time_string_value\"]",
+      "sparkline": false,
+      "animate": true
+     }
+    },
+    {
+     "type": "indicator",
+     "settings": {
+      "title": "",
+      "value": "datasources[\"CenterData\"][\"cod\"]!=8",
+      "on_text": "Operation Status",
+      "off_text": "Operation Status"
+     }
+    },
+    {
+     "type": "Toggle",
+     "settings": {
+      "caption": "Operation",
+      "state": "datasources[\"CenterData\"][\"cod\"]!=8",
+      "ontext": "Start",
+      "offtext": "Finish",
+      "onaction": "json = { \"dst\":255, \"cod\":9 }; microgear[\"GIANTGateway\"].chat(\"GIANTGateway\", json);",
+      "offaction": "json = { \"dst\":255, \"cod\":8 }; microgear[\"GIANTGateway\"].chat(\"GIANTGateway\", json);"
+     }
+    },
+    {
+     "type": "Button",
+     "settings": {
+      "caption": "BEWARE",
+      "text": "ระวังดับเพลิงอากาศ",
+      "color": "yellow",
+      "onClick": "json = { \"dst\":91, \"cod\":5 }\nmicrogear[\"GIANTGateway\"].chat(\"GIANTGateway\", json)"
+     }
+    },
+    {
+     "type": "Button",
+     "settings": {
+      "caption": "RESCUE",
+      "text": "ช่วยชีวิตด่วน",
+      "color": "red",
+      "onClick": "var status = datasources[\"91StationData\"][\"status\"]\nvar code = datasources[\"CenterData\"][\"cod\"]\nif (code != 15 && status == 2) {\n    lat = datasources[\"91StationData\"][\"latitude\"];\n    lon = datasources[\"91StationData\"][\"longitude\"];\n    json = { \"dst\":255, \"cod\":15, \"lat\":lat, \"lon\":lon };\n    microgear[\"GIANTGateway\"].chat(\"GIANTGateway\", json)\n}"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Destination",
+      "size": "big",
+      "value": "datasources[\"CenterData\"][\"dst\"]",
+      "sparkline": true,
+      "animate": true
+     }
+    }
+   ]
+  },
+  {
+   "title": "Selected Device",
+   "width": 1,
+   "row": {
+    "2": 17,
+    "3": 1
+   },
+   "col": {
+    "2": 1,
+    "3": 3
+   },
+   "col_width": 1,
+   "widgets": [
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Device Name",
+      "size": "regular",
+      "value": "Hotshot Alpha Team",
+      "animate": true
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Team Status",
+      "value": "datasources[\"91StationData\"][\"status\"]",
+      "min_value": 0,
+      "max_value": "2"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Latitude",
+      "size": "regular",
+      "value": "datasources[\"91StationData\"][\"latitude\"]",
+      "animate": true,
+      "units": "degrees"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Longitude",
+      "size": "regular",
+      "value": "datasources[\"91StationData\"][\"longitude\"]",
+      "animate": true,
+      "units": "degrees"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Code",
+      "size": "big",
+      "value": "datasources[\"CenterData\"][\"cod\"]",
+      "sparkline": true,
+      "animate": true
+     }
+    }
+   ]
+  },
+  {
+   "title": "Tracking Map",
+   "width": 1,
+   "row": {
+    "2": 57,
+    "3": 19
+   },
+   "col": {
+    "2": 1,
+    "3": 1
+   },
+   "col_width": "3",
+   "widgets": [
+    {
+     "type": "longdo map",
+     "settings": {
+      "lat": "datasources[\"91StationData\"][\"latitude\"]",
+      "lon": "datasources[\"91StationData\"][\"longitude\"]",
+      "zoom": "16",
+      "style": "map",
+      "traffic": false,
+      "toolbar": true,
+      "height_block": "6"
+     }
+    }
+   ]
+  },
+  {
+   "title": "Infrastructure",
+   "width": 1,
+   "row": {
+    "2": 71,
+    "3": 33,
+    "5": 29
+   },
+   "col": {
+    "2": 1,
+    "3": 1,
+    "5": 1
+   },
+   "col_width": "3",
+   "widgets": [
+    {
+     "type": "html",
+     "settings": {
+      "html": "<img src=\"https://scontent-kut2-1.xx.fbcdn.net/v/t1.15752-9/83636117_1052952705066161_646803576353456128_n.png?_nc_cat=106&_nc_oc=AQl0oJDZtPrvM0Dqx6sAplx4TvgLl1sl7mFIgZ7QBmp9tOIiFOPfmG_m75XsVQ4pedE&_nc_ht=scontent-kut2-1.xx&oh=9f0ee82b8a6c32d50ffbb7adda88a82b&oe=5ECA6E23\" >",
+      "height": 2
+     }
+    }
+   ]
+  },
+  {
+   "title": "GATEWAY",
+   "width": 1,
+   "row": {
+    "2": 19,
+    "3": 39,
+    "5": 35,
+    "7": 35
+   },
+   "col": {
+    "2": 2,
+    "3": 3,
+    "5": 3,
+    "7": 3
+   },
+   "col_width": 1,
+   "widgets": [
+    {
+     "type": "indicator",
+     "settings": {
+      "title": "Link Status",
+      "value": "var diff_time = 120; //Second\n\nvar last = datasources[\"93StationData\"][\"timestamp\"];\nvar now = datasources[\"MainClock\"][\"numeric_value\"]/1000;\n\nif (now - last > diff_time) {\n    return 0;\n}else{\n    return 1;\n}",
+      "on_text": "Connected",
+      "off_text": "Not Connect"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Last Update",
+      "size": "regular",
+      "value": "var d = new Date(datasources[\"93StationData\"][\"timestamp\"]*1000);\nreturn d.toLocaleTimeString()",
+      "animate": true
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Status",
+      "value": "datasources[\"93StationData\"][\"status\"]",
+      "min_value": 0,
+      "max_value": "2"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Speed",
+      "size": "regular",
+      "value": "var speed = datasources[\"93StationData\"][\"speed\"];\nreturn speed.toPrecision(4);",
+      "animate": true,
+      "units": "km/hr"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Satellite Count",
+      "size": "regular",
+      "value": "datasources[\"93StationData\"][\"satellite_count\"]",
+      "animate": true,
+      "units": "satellites"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Latitude",
+      "size": "regular",
+      "value": "datasources[\"93StationData\"][\"latitude\"]",
+      "animate": true,
+      "units": "degrees"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Longitude",
+      "size": "regular",
+      "value": "datasources[\"93StationData\"][\"longitude\"]",
+      "animate": true,
+      "units": "degrees"
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Device Temperature",
+      "value": "var dev_temp = datasources[\"93StationData\"][\"device_temperature\"];\nreturn dev_temp.toPrecision(4);",
+      "units": "°C",
+      "min_value": 0,
+      "max_value": "100"
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Weather Temperature",
+      "value": "var temp = datasources[\"93WeatherFeed\"][\"data\"][\"lastest_data\"][2][\"values\"][0][1]\nreturn temp.toPrecision(4);",
+      "units": "°C",
+      "min_value": 0,
+      "max_value": 100
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Weather Humidity",
+      "value": "var humi = datasources[\"93WeatherFeed\"][\"data\"][\"lastest_data\"][0][\"values\"][0][1]\nreturn humi.toPrecision(4);",
+      "units": "%",
+      "min_value": 0,
+      "max_value": 100
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Weather Pressure",
+      "value": "var pres = datasources[\"93WeatherFeed\"][\"data\"][\"lastest_data\"][1][\"values\"][0][1]\nreturn pres.toPrecision(4);",
+      "units": "hPa",
+      "min_value": "900",
+      "max_value": "1100"
+     }
+    }
+   ]
+  },
+  {
+   "title": "CLUSTER",
+   "width": 1,
+   "row": {
+    "2": 77,
+    "3": 39,
+    "5": 35,
+    "6": 35,
+    "7": 35
+   },
+   "col": {
+    "2": 2,
+    "3": 2,
+    "5": 2,
+    "6": 2,
+    "7": 2
+   },
+   "col_width": 1,
+   "widgets": [
+    {
+     "type": "indicator",
+     "settings": {
+      "title": "Link Status",
+      "value": "var diff_time = 120; //Second\n\nvar last = datasources[\"92StationData\"][\"timestamp\"];\nvar now = datasources[\"MainClock\"][\"numeric_value\"]/1000;\n\nif (now - last > diff_time) {\n    return 0;\n}else{\n    return 1;\n}",
+      "on_text": "Connected",
+      "off_text": "Not Connect"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Last Update",
+      "size": "regular",
+      "value": "var d = new Date(datasources[\"92StationData\"][\"timestamp\"]*1000);\nreturn d.toLocaleTimeString()",
+      "animate": true
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Status",
+      "value": "datasources[\"92StationData\"][\"status\"]",
+      "min_value": 0,
+      "max_value": "2"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Speed",
+      "size": "regular",
+      "value": "var speed = datasources[\"92StationData\"][\"speed\"];\nreturn speed.toString();",
+      "animate": true,
+      "units": "km/hr"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Satellite Count",
+      "size": "regular",
+      "value": "datasources[\"92StationData\"][\"satellite_count\"]",
+      "animate": true,
+      "units": "satellites"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Latitude",
+      "size": "regular",
+      "value": "datasources[\"92StationData\"][\"latitude\"]",
+      "animate": true,
+      "units": "degrees"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Longitude",
+      "size": "regular",
+      "value": "datasources[\"92StationData\"][\"longitude\"]",
+      "animate": true,
+      "units": "degrees"
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Device Temperature",
+      "value": "var dev_temp = datasources[\"92StationData\"][\"device_temperature\"];\nreturn dev_temp.toPrecision(4);",
+      "units": "°C",
+      "min_value": 0,
+      "max_value": "100"
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Weather Temperature",
+      "value": "var temp = datasources[\"92WeatherFeed\"][\"data\"][\"lastest_data\"][2][\"values\"][0][1]\nreturn temp.toPrecision(4);",
+      "units": "°C",
+      "min_value": 0,
+      "max_value": 100
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Weather Humidity",
+      "value": "var humi = datasources[\"92WeatherFeed\"][\"data\"][\"lastest_data\"][0][\"values\"][0][1]\nreturn humi.toPrecision(4);",
+      "units": "%",
+      "min_value": 0,
+      "max_value": 100
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Weather Pressure",
+      "value": "var pres = datasources[\"92WeatherFeed\"][\"data\"][\"lastest_data\"][1][\"values\"][0][1]\nreturn pres.toPrecision(4);",
+      "units": "hPa",
+      "min_value": "900",
+      "max_value": "1100"
+     }
+    }
+   ]
+  },
+  {
+   "title": "END DEVICE",
+   "width": 1,
+   "row": {
+    "2": 77,
+    "3": 39,
+    "5": 35,
+    "6": 35,
+    "7": 35
+   },
+   "col": {
+    "2": 1,
+    "3": 1,
+    "5": 1,
+    "6": 1,
+    "7": 1
+   },
+   "col_width": 1,
+   "widgets": [
+    {
+     "type": "indicator",
+     "settings": {
+      "title": "Link Status",
+      "value": "var diff_time = 120; //Second\n\nvar last = datasources[\"91StationData\"][\"timestamp\"];\nvar now = datasources[\"MainClock\"][\"numeric_value\"]/1000;\n\nif (now - last > diff_time) {\n    return 0;\n}else{\n    return 1;\n}",
+      "on_text": "Connected",
+      "off_text": "Not Connect"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Last Update",
+      "size": "regular",
+      "value": "var d = new Date(datasources[\"91StationData\"][\"timestamp\"]*1000);\nreturn d.toLocaleTimeString()",
+      "animate": true
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Status",
+      "value": "datasources[\"91StationData\"][\"status\"]",
+      "min_value": 0,
+      "max_value": "2"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Speed",
+      "size": "regular",
+      "value": "var speed = datasources[\"91StationData\"][\"speed\"];\nreturn speed.toString();",
+      "animate": true,
+      "units": "km/hr"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Satellite Count",
+      "size": "regular",
+      "value": "datasources[\"91StationData\"][\"satellite_count\"]",
+      "animate": true,
+      "units": "stations"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Latitude",
+      "size": "regular",
+      "value": "datasources[\"91StationData\"][\"latitude\"]",
+      "animate": true,
+      "units": "degrees"
+     }
+    },
+    {
+     "type": "text_widget",
+     "settings": {
+      "title": "Longitude",
+      "size": "regular",
+      "value": "datasources[\"91StationData\"][\"longitude\"]",
+      "animate": true,
+      "units": "degrees"
+     }
+    },
+    {
+     "type": "gauge",
+     "settings": {
+      "title": "Device Temperature",
+      "value": "var dev_temp = datasources[\"91StationData\"][\"device_temperature\"];\nreturn dev_temp.toPrecision(4);",
+      "units": "°C",
+      "min_value": 0,
+      "max_value": "100"
+     }
+    }
+   ]
+  },
+  {
+   "title": "Graph Trending",
+   "width": 1,
+   "row": {
+    "2": 115,
+    "3": 83,
+    "6": 79,
+    "7": 79
+   },
+   "col": {
+    "2": 1,
+    "3": 1,
+    "6": 1,
+    "7": 1
+   },
+   "col_width": "3",
+   "widgets": [
+    {
+     "type": "FeedView",
+     "settings": {
+      "title": "Cluster Weather Trend",
+      "datasource": "datasources[\"92WeatherFeed\"][\"data\"]",
+      "type": "line",
+      "color": "",
+      "marker": false,
+      "multipleaxis": true,
+      "autogap": false,
+      "height_block": "300",
+      "height": "5"
+     }
+    },
+    {
+     "type": "FeedView",
+     "settings": {
+      "title": "Gateway Weather Trend",
+      "datasource": "datasources[\"93WeatherFeed\"][\"data\"]",
+      "type": "line",
+      "color": "",
+      "marker": false,
+      "multipleaxis": true,
+      "autogap": false,
+      "height_block": "300",
+      "height": "5"
+     }
+    }
+   ]
+  },
+  {
+   "title": "ข้อตกลงในการใช้ซอฟต์แวร์",
+   "width": 1,
+   "row": {
+    "2": 137,
+    "3": 105,
+    "8": 83,
+    "9": 83
+   },
+   "col": {
+    "2": 1,
+    "3": 1,
+    "8": 1,
+    "9": 1
+   },
+   "col_width": "3",
+   "widgets": [
+    {
+     "type": "html",
+     "settings": {
+      "html": "<center><br>ข้อตกลงในการใช้ซอฟต์แวร์<br>\nซอฟต์แวร์นี้เป็นผลงานที่พัฒนาขึ้นโดย นาย วรรณรัตน์ บุญยัง จากคณะวิศวกรรมศาสตร์ มหาวิทยาลัยเชียงใหม่ ภายใต้การดูแลของ ผศ.ดร. ภาสกร แช่มประเสริฐ \nภายใต้โครงการระบบติดตามพิกัดเจ้าหน้าที่ดับไฟป่าผ่านโครงข่ายไร้สายเฉพาะกิจ ซึ่งสนับสนุนโดย สำนักงานพัฒนาวิทยาศาสตร์และเทคโนโลยีแห่งชาติ \nโดยมีวัตถุประสงค์เพื่อส่งเสริมให้นักเรียนและนักศึกษาได้เรียนรู้และฝึกทักษะในการพัฒนาซอฟต์แวร์ ลิขสิทธิ์ของซอฟต์แวร์นี้จึงเป็นของผู้พัฒนา \nซึ่งผู้พัฒนาได้อนุญาตให้สำนักงานพัฒนาวิทยาศาสตร์และเทคโนโลยีแห่งชาติ เผยแพร่ซอฟต์แวร์นี้ตาม “ต้นฉบับ” โดยไม่มีการแก้ไขดัดแปลงใด ๆ ทั้งสิ้น \nให้แก่บุคคลทั่วไปได้ใช้เพื่อประโยชน์ส่วนบุคคลหรือประโยชน์ทางการศึกษาที่ไม่มีวัตถุประสงค์ในเชิงพาณิชย์ โดยไม่คิดค่าตอบแทนการใช้ซอฟต์แวร์ \nดังนั้น สำนักงานพัฒนาวิทยาศาสตร์และเทคโนโลยีแห่งชาติจึงไม่มีหน้าที่ในการดูแล บำรุงรักษา จัดการอบรมการใช้งาน หรือพัฒนาประสิทธิภาพซอฟต์แวร์ \nรวมทั้งไม่รับรองความถูกต้องหรือประสิทธิภาพการทำงานของซอฟต์แวร์ ตลอดจนไม่รับประกันความเสียหายต่าง ๆ อันเกิดจากการใช้ซอฟต์แวร์นี้ทั้งสิ้น<br>\n\n<br>License Agreement<br>\nThis software is a work developed by Mr. Wanarut Boonyung from Faculty of Engineering, Chiang Mai University \nunder the provision of Asst. Prof. Paskorn Champrasert, Ph.D. under Geo-Location Tracking System for Interagency Hotshot Crew \nusing MQTT Ad-Hoc Lora NeTwork (GIANT), which has been supported by the National Science and Technology Development Agency (NSTDA), \n    in order to encourage pupils and students to learn and practice their skills in developing software. Therefore, \n        the intellectual property of this software shall belong to the developer and the developer gives NSTDA a permission \n        to distribute this software as an “as is” and non-modified software for a temporary and non-exclusive use without \n        remuneration to anyone for his or her own purpose or academic purpose, which are not commercial purposes. \n        In this connection, NSTDA shall not be responsible to the user for taking care, maintaining, training or developing \n        the efficiency of this software. Moreover, NSTDA shall not be liable for any error, software efficiency and \n        damages in connection with or arising out of the use of the software.”<br></center>\n",
+      "height": 6
+     }
+    }
+   ]
+  }
+ ],
+ "datasources": [
+  {
+   "name": "MainClock",
+   "type": "clock",
+   "settings": {
+    "name": "MainClock",
+    "refresh": 1
+   }
+  },
+  {
+   "name": "93WeatherFeed",
+   "type": "netpie_feed",
+   "settings": {
+    "name": "93WeatherFeed",
+    "feedid": "93WeatherFeed",
+    "apikey": "fOl8eN24TjtC6VYwIxxMnRFF53yzcYcs",
+    "granularity_value": "5",
+    "granularity_unit": "minutes",
+    "since_value": "1",
+    "since_unit": "days",
+    "interval": "10"
+   }
+  },
+  {
+   "name": "93StationData",
+   "type": "JSON",
+   "settings": {
+    "name": "93StationData",
+    "url": "https://gianttable.firebaseio.com/now/93Weather.json",
+    "use_thingproxy": true,
+    "refresh": 3,
+    "method": "GET"
+   }
+  },
+  {
+   "name": "91StationData",
+   "type": "JSON",
+   "settings": {
+    "name": "91StationData",
+    "url": "https://gianttable.firebaseio.com/now/91Weather.json",
+    "use_thingproxy": true,
+    "refresh": 3,
+    "method": "GET"
+   }
+  },
+  {
+   "name": "92StationData",
+   "type": "JSON",
+   "settings": {
+    "name": "92StationData",
+    "url": "https://gianttable.firebaseio.com/now/92Weather.json",
+    "use_thingproxy": true,
+    "refresh": 3,
+    "method": "GET"
+   }
+  },
+  {
+   "name": "92WeatherFeed",
+   "type": "netpie_feed",
+   "settings": {
+    "name": "92WeatherFeed",
+    "feedid": "92WeatherFeed",
+    "apikey": "aXwIpUCOCpn5hDQ0fUZS8Yd8EcEwkZLt",
+    "granularity_value": "5",
+    "granularity_unit": "minutes",
+    "since_value": "1",
+    "since_unit": "days",
+    "interval": "10"
+   }
+  },
+  {
+   "name": "GIANTGateway",
+   "type": "netpie_microgear",
+   "settings": {
+    "name": "GIANTGateway",
+    "appid": "GIANT",
+    "key": "jmcelnYHZMPXPvo",
+    "secret": "8tuJjmr1l2zm4j1QLcvlyJXt3",
+    "topics": "/#"
+   }
+  },
+  {
+   "name": "CenterData",
+   "type": "JSON",
+   "settings": {
+    "name": "CenterData",
+    "url": "https://gianttable.firebaseio.com/now/CenterData.json",
+    "use_thingproxy": true,
+    "refresh": 1,
+    "method": "GET"
+   }
+  }
+ ],
+ "columns": 3,
+ "theme": "default"
+}
