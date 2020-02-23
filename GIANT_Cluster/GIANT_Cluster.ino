@@ -14,7 +14,7 @@ FirebaseJson json;
 /*------COMMUNICATION------*/
 #define LORA_BAND   920E6 // LoRa Band (Thailand)
 #define PABOOST     true
-byte currentID      = 92;        // This node address
+byte currentID      = 94;        // This node address
 int type = 1;
 byte destinationID  = 93;        // Original destination (0xFF broadcast)
 LoRa_DSR DSR(currentID, destinationID, type, true);
@@ -30,7 +30,7 @@ static const uint32_t GPSBaud = 9600;
 TinyGPSPlus gps;
 HardwareSerial GPSSerial(2);
 /*------STATUS------*/
-#define pattern_size 4
+#define pattern_size 8
 #define interval 500
 struct LEDBlink {
   int pin;
@@ -44,8 +44,7 @@ struct Button {
   unsigned long lastdeb;
 };
 void IRAM_ATTR isr_btn(void* arg);
-Button redBtn = {2, false, {12, {0, 0, 0, 0}, 0}, 0};
-Button grnBtn = {23, false, {25, {1, 0, 1, 0}, 0}, 0};
+Button redBtn = {2, false, {12, {0, 0, 0, 0, 0, 0, 0, 0}, 0}, 0};
 #define debounceDelay  1000
 
 int current_status = 0;
@@ -65,10 +64,6 @@ void setup()
   attachInterruptArg(redBtn.PIN, isr_btn, &redBtn, FALLING);
   pinMode(redBtn.LEDOut.pin, OUTPUT);
 
-  pinMode(grnBtn.PIN, INPUT_PULLUP);
-  attachInterruptArg(grnBtn.PIN, isr_btn, &grnBtn, FALLING);
-  pinMode(grnBtn.LEDOut.pin, OUTPUT);
-
   digitalWrite(redBtn.LEDOut.pin, HIGH);
   GPSSetup();
   if (bme.begin(&twi)) {
@@ -87,8 +82,8 @@ void setup()
 }
 
 #define interval 60000    // interval between sends
-#define intervalLED 500
-long lastsent = -interval;
+#define intervalLED 250
+long lastsent = -interval + random(1000, 5000);
 long lastLED = 0;
 long lastlatency = 0;
 int counter = 0;
@@ -121,8 +116,17 @@ void loop()
       Serial.print("\tSend\t" + String(counter));
       Serial.print("\tSuccess\t" + String(++success));
       Serial.print("\tLatency\t" + String(cur_time - lastlatency) + "\tms");
-      Serial.print("\tRSSI\t" + String(DSR.packetRssi()));
+      int rssi = DSR.packetRssi();
+      Serial.print("\tRSSI\t" + String(rssi));
       Serial.println("\tSnr\t" + String(DSR.packetSnr()));
+
+      if (rssi < -100) {
+        bool pattern[] = {1, 0, 1, 0, 0, 0, 0, 0};
+        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+      } else {
+        bool pattern[] = {1, 0, 1, 0, 1, 0, 1, 0};
+        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+      }
     } else {
       Serial.println();
       FirebaseJson got_json;
@@ -138,22 +142,22 @@ void loop()
 
       switch (jsonObj.intValue) {
         case 1: {
-            bool pattern[] = {0, 0, 0, 1};
+            bool pattern[] = {1, 1, 0, 0, 0, 0, 0, 0};
             memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
             break;
           }
         case 5: {
-            bool pattern[] = {0, 1, 0, 1};
+            bool pattern[] = {1, 1, 0, 0, 1, 1, 0, 0};
             memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
             break;
           }
         case 7: {
-            bool pattern[] = {0, 1, 1, 1};
+            bool pattern[] = {1, 1, 1, 1, 1, 1, 0, 0};
             memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
             break;
           }
         default: {
-            bool pattern[] = {1, 0, 0, 1};
+            bool pattern[] = {1, 0, 1, 0, 1, 0, 1, 0};
             memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
             break;
           }
@@ -161,33 +165,19 @@ void loop()
     }
   }
 
-  if (redBtn.pressed || grnBtn.pressed) {
-    if (redBtn.pressed) {
-      Serial.println(F("RED Button is pressed."));
-      redBtn.pressed = false;
-      if (current_status == 2) {
-        current_status = 0;
-        bool pattern[] = {0, 0, 0, 0};
-        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
-      } else {
-        current_status = 2;
-        bool pattern[] = {1, 1, 1, 1};
-        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
-      }
+  if (redBtn.pressed) {
+    Serial.println(F("RED Button is pressed."));
+    redBtn.pressed = false;
+    if (current_status == 2) {
+      current_status = 0;
+      bool pattern[] = {0, 0, 0, 0, 0, 0, 0, 0};
+      memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+    } else {
+      current_status = 2;
+      bool pattern[] = {1, 1, 1, 1, 1, 1, 1, 1};
+      memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
     }
-    if (grnBtn.pressed) {
-      Serial.println(F("GREEN Button is pressed."));
-      grnBtn.pressed = false;
-      if (current_status == 1) {
-        current_status = 0;
-        bool pattern[] = {1, 0, 1, 0};
-        memcpy(grnBtn.LEDOut.pattern, pattern, pattern_size);
-      } else {
-        current_status = 1;
-        bool pattern[] = {1, 1, 1, 1};
-        memcpy(grnBtn.LEDOut.pattern, pattern, pattern_size);
-      }
-    }
+
 
     json.clear();
     updateData();
@@ -203,7 +193,6 @@ void loop()
   if (cur_time - lastLED > intervalLED) {
     lastLED = cur_time;
     blinkUpdate(redBtn.LEDOut);
-    blinkUpdate(grnBtn.LEDOut);
   }
 }
 
