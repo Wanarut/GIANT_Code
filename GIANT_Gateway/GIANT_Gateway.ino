@@ -158,46 +158,50 @@ void loop()
     }
   }
 
-  if (cur_time - lastsent > interval) {
-    lastsent = cur_time;
-    if (haswifi) timeClient.update();
+  if (GPSSerial.available() || !hasgps) {
+    if (gps.encode(GPSSerial.read()) || !hasgps) {
+      if (cur_time - lastsent > interval) {
+        lastsent = cur_time;
+        if (haswifi) timeClient.update();
 
-    json.clear();
-    updateData();
-    String datatable = String(currentID) + "Weather";
-    if (haswifi) sendData2Firebase(datatable, json);
+        json.clear();
+        updateData();
+        String datatable = String(currentID) + "Weather";
+        if (haswifi) sendData2Firebase(datatable, json);
 
-    //    String jsonStr;
-    //    json.toString(jsonStr);
-    //    Serial.println(jsonStr);
+        //    String jsonStr;
+        //    json.toString(jsonStr);
+        //    Serial.println(jsonStr);
 
-    json.clear();
-    if (hasbme) updateWeather();
-    datatable += "Feed";
-    if (haswifi) sendWeather2Feed(datatable);
+        json.clear();
+        if (hasbme) updateWeather();
+        datatable += "Feed";
+        if (haswifi) sendWeather2Feed(datatable);
 
-    //    json.toString(jsonStr, true);
-    //    Serial.println(jsonStr);
-  }
+        //    json.toString(jsonStr, true);
+        //    Serial.println(jsonStr);
+      }
 
-  if (redBtn.pressed) {
-    Serial.println(F("RED Button is pressed."));
-    redBtn.pressed = false;
-    if (current_status == 2) {
-      current_status = 0;
-      bool pattern[] = {0, 0, 0, 0, 0, 0, 0, 0};
-      memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
-    } else {
-      current_status = 2;
-      bool pattern[] = {1, 1, 1, 1, 1, 1, 1, 1};
-      memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+      if (redBtn.pressed) {
+        Serial.println(F("RED Button is pressed."));
+        redBtn.pressed = false;
+        if (current_status == 2) {
+          current_status = 0;
+          bool pattern[] = {0, 0, 0, 0, 0, 0, 0, 0};
+          memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+        } else {
+          current_status = 2;
+          bool pattern[] = {1, 1, 1, 1, 1, 1, 1, 1};
+          memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+        }
+        if (haswifi) timeClient.update();
+
+        json.clear();
+        String datatable = String(currentID) + "Weather";
+        updateData();
+        if (haswifi) sendData2Firebase(datatable, json);
+      }
     }
-    if (haswifi) timeClient.update();
-
-    json.clear();
-    String datatable = String(currentID) + "Weather";
-    updateData();
-    if (haswifi) sendData2Firebase(datatable, json);
   }
 
   if (cur_time - lastLED > intervalLED) {
@@ -291,19 +295,16 @@ void updateData()
   json.set("status", stat);
 
   if (hasgps) {
-    long prev_time = millis();
-    while (millis() - prev_time < timeoutCheck / 60) {
-      if (GPSSerial.available() && gps.encode(GPSSerial.read()) && gps.location.isValid()) {
-        double lati = gps.location.lat();
-        double longi = gps.location.lng();
-        int sp = gps.speed.mph();
-        int sat_count = gps.satellites.value();
-        json.set("latitude", lati);
-        json.set("longitude", longi);
-        json.set("speed", sp);
-        json.set("satellite_count", sat_count);
-        break;
-      }
+    if (gps.location.isValid())
+    {
+      double lati = gps.location.lat();
+      double longi = gps.location.lng();
+      int sp = gps.speed.mph();
+      int sat_count = gps.satellites.value();
+      json.set("latitude", lati);
+      json.set("longitude", longi);
+      json.set("speed", sp);
+      json.set("satellite_count", sat_count);
     }
   } else {
     json.set("latitude", 18.795402);

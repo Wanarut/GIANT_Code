@@ -70,7 +70,7 @@ void setup()
   pinMode(grnBtn.LEDOut.pin, OUTPUT);
 
   digitalWrite(redBtn.LEDOut.pin, HIGH);
-//  GPSSetup();
+  GPSSetup();
   if (bme.begin(&twi)) {
     hasbme = true;
     Serial.println(F("Found BME280 sensor"));
@@ -98,19 +98,23 @@ void loop()
   long cur_time = millis();
   DSR.check_timer(cur_time);
 
-  if (cur_time - lastsent > interval) {
-    lastsent = cur_time;
+  if (GPSSerial.available() || !hasgps) {
+    if (gps.encode(GPSSerial.read()) || !hasgps) {
+      if (cur_time - lastsent > interval) {
+        lastsent = cur_time;
 
-    json.clear();
-    updateData();
-    if (hasbme) updateWeather();
-    String message;
-    json.toString(message);
-    lastlatency = cur_time;
-    DSR.sendDATA(message, destinationID);
-    Serial.print(F("Sending -> "));
-    Serial.println(message);
-    counter++;
+        json.clear();
+        updateData();
+        if (hasbme) updateWeather();
+        String message;
+        json.toString(message);
+        lastlatency = cur_time;
+        DSR.sendDATA(message, destinationID);
+        Serial.print(F("Sending -> "));
+        Serial.println(message);
+        counter++;
+      }
+    }
   }
 
   String received = DSR.checkPacket();
@@ -170,43 +174,48 @@ void loop()
     }
   }
 
-  if (redBtn.pressed || grnBtn.pressed) {
-    if (redBtn.pressed) {
-      Serial.println(F("RED Button is pressed."));
-      redBtn.pressed = false;
-      if (current_status == 2) {
-        current_status = 0;
-        bool pattern[] = {0, 0, 0, 0, 0, 0, 0, 0};
-        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
-      } else {
-        current_status = 2;
-        bool pattern[] = {1, 1, 1, 1, 1, 1, 1, 1};
-        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
-      }
-    }
-    if (grnBtn.pressed) {
-      Serial.println(F("GREEN Button is pressed."));
-      grnBtn.pressed = false;
-      if (current_status == 1) {
-        current_status = 0;
-        bool pattern[] = {0, 0, 0, 0, 0, 0, 0, 0};
-        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
-      } else {
-        current_status = 1;
-        bool pattern[] = {1, 1, 1, 1, 0, 0, 0, 0};
-        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
-      }
-    }
+  if (GPSSerial.available() || !hasgps) {
+    if (gps.encode(GPSSerial.read()) || !hasgps) {
+      if (redBtn.pressed || grnBtn.pressed) {
+        if (redBtn.pressed) {
+          Serial.println(F("RED Button is pressed."));
+          redBtn.pressed = false;
+          if (current_status == 2) {
+            current_status = 0;
+            bool pattern[] = {0, 0, 0, 0, 0, 0, 0, 0};
+            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+          } else {
+            current_status = 2;
+            bool pattern[] = {1, 1, 1, 1, 1, 1, 1, 1};
+            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+          }
+        }
+        if (grnBtn.pressed) {
+          Serial.println(F("GREEN Button is pressed."));
+          grnBtn.pressed = false;
+          if (current_status == 1) {
+            current_status = 0;
+            bool pattern[] = {0, 0, 0, 0, 0, 0, 0, 0};
+            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+          } else {
+            current_status = 1;
+            bool pattern[] = {1, 1, 1, 1, 0, 0, 0, 0};
+            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+          }
+        }
 
-    json.clear();
-    updateData();
-    String message;
-    json.toString(message);
-    lastlatency = cur_time;
-    DSR.sendDATA(message, destinationID);
-    Serial.print(F("Sending -> "));
-    Serial.println(message);
-    counter++;
+        json.clear();
+        updateData();
+        if (hasbme) updateWeather();
+        String message;
+        json.toString(message);
+        lastlatency = cur_time;
+        DSR.sendDATA(message, destinationID);
+        Serial.print(F("Sending -> "));
+        Serial.println(message);
+        counter++;
+      }
+    }
   }
 
   if (cur_time - lastLED > intervalLED) {
@@ -249,19 +258,16 @@ void updateData()
   json.set("node/[2]", stat);
 
   if (hasgps) {
-    long prev_time = millis();
-    while (millis() - prev_time < timeoutCheck / 60) {
-      if (GPSSerial.available() && gps.encode(GPSSerial.read()) && gps.location.isValid()) {
-        double lati = gps.location.lat();
-        double longi = gps.location.lng();
-        int sp = gps.speed.mph();
-        int sat_count = gps.satellites.value();
-        json.set("gps/[0]", lati);
-        json.set("gps/[1]", longi);
-        json.set("gps/[2]", sp);
-        json.set("gps/[3]", sat_count);
-        break;
-      }
+    if (gps.location.isValid())
+    {
+      double lati = gps.location.lat();
+      double longi = gps.location.lng();
+      int sp = gps.speed.mph();
+      int sat_count = gps.satellites.value();
+      json.set("gps/[0]", lati);
+      json.set("gps/[1]", longi);
+      json.set("gps/[2]", sp);
+      json.set("gps/[3]", sat_count);
     }
   } else {
     json.set("gps/[0]", 18.787681);
