@@ -112,7 +112,15 @@ void setup()
 
 #define interval 60000    // interval between sends
 #define intervalLED 250
-long lastsent = -interval + random(1000, 5000);
+bool pattern_00[] = {0, 0, 0, 0, 0, 0, 0, 0};
+bool pattern_25[] = {1, 1, 0, 0, 0, 0, 0, 0};
+bool pattern_50[] = {1, 1, 1, 1, 0, 0, 0, 0};
+bool pattern_75[] = {1, 1, 1, 1, 1, 1, 0, 0};
+bool pattern_ON[] = {1, 1, 1, 1, 1, 1, 1, 1};
+bool pattern_FA[] = {1, 0, 1, 0, 1, 0, 1, 0};
+bool pattern_SL[] = {1, 1, 0, 0, 1, 1, 0, 0};
+
+long lastsent = -interval;
 long lastLED = 0;
 long lastlatency = 0;
 int counter = 0;
@@ -133,14 +141,6 @@ void loop()
       int rssi = DSR.packetRssi();
       Serial.print("\tRSSI\t" + String(rssi));
       Serial.println("\tSnr\t" + String(DSR.packetSnr()));
-
-      if (rssi < -100) {
-        bool pattern[] = {1, 0, 1, 0, 0, 0, 0, 0};
-        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
-      } else {
-        bool pattern[] = {1, 0, 1, 0, 1, 0, 1, 0};
-        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
-      }
     } else {
       Serial.println();
       if (haswifi) timeClient.update();
@@ -187,12 +187,10 @@ void loop()
         redBtn.pressed = false;
         if (current_status == 2) {
           current_status = 0;
-          bool pattern[] = {0, 0, 0, 0, 0, 0, 0, 0};
-          memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+          memcpy(redBtn.LEDOut.pattern, pattern_SL, pattern_size);
         } else {
           current_status = 2;
-          bool pattern[] = {1, 1, 1, 1, 1, 1, 1, 1};
-          memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+          memcpy(redBtn.LEDOut.pattern, pattern_ON, pattern_size);
         }
         if (haswifi) timeClient.update();
 

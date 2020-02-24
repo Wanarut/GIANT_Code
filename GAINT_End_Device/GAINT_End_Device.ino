@@ -45,7 +45,7 @@ struct Button {
 };
 void IRAM_ATTR isr_btn(void* arg);
 Button redBtn = {2, false, {12, {0, 0, 0, 0, 0, 0, 0, 0}, 0}, 0};
-Button grnBtn = {23, false, {25, {1, 0, 1, 0, 1, 0, 1, 0}, 0}, 0};
+Button grnBtn = {23, false, {25, {1, 1, 0, 0, 1, 1, 0, 0}, 0}, 0};
 #define debounceDelay  1000
 
 int current_status = 0;
@@ -87,8 +87,16 @@ void setup()
 }
 
 #define interval 60000    // interval between sends
-#define intervalLED 500
-long lastsent = -interval + random(1000, 5000);
+#define intervalLED 250
+bool pattern_00[] = {0, 0, 0, 0, 0, 0, 0, 0};
+bool pattern_25[] = {1, 1, 0, 0, 0, 0, 0, 0};
+bool pattern_50[] = {1, 1, 1, 1, 0, 0, 0, 0};
+bool pattern_75[] = {1, 1, 1, 1, 1, 1, 0, 0};
+bool pattern_ON[] = {1, 1, 1, 1, 1, 1, 1, 1};
+bool pattern_FA[] = {1, 0, 1, 0, 1, 0, 1, 0};
+bool pattern_SL[] = {1, 1, 0, 0, 1, 1, 0, 0};
+
+long lastsent = -interval;
 long lastLED = 0;
 long lastlatency = 0;
 int counter = 0;
@@ -129,12 +137,10 @@ void loop()
       Serial.print("\tRSSI\t" + String(rssi));
       Serial.println("\tSnr\t" + String(DSR.packetSnr()));
 
-      if (rssi < -100) {
-        bool pattern[] = {1, 0, 1, 0, 0, 0, 0, 0};
-        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+      if (rssi < -120) {
+        memcpy(grnBtn.LEDOut.pattern, pattern_FA, pattern_size);
       } else {
-        bool pattern[] = {1, 0, 1, 0, 1, 0, 1, 0};
-        memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+        memcpy(grnBtn.LEDOut.pattern, pattern_SL, pattern_size);
       }
     } else {
       Serial.println();
@@ -151,23 +157,19 @@ void loop()
 
       switch (jsonObj.intValue) {
         case 1: {
-            bool pattern[] = {1, 1, 0, 0, 0, 0, 0, 0};
-            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+            memcpy(redBtn.LEDOut.pattern, pattern_25, pattern_size);
             break;
           }
         case 5: {
-            bool pattern[] = {1, 1, 0, 0, 1, 1, 0, 0};
-            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+            memcpy(redBtn.LEDOut.pattern, pattern_50, pattern_size);
             break;
           }
         case 7: {
-            bool pattern[] = {1, 1, 1, 1, 1, 1, 0, 0};
-            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+            memcpy(redBtn.LEDOut.pattern, pattern_75, pattern_size);
             break;
           }
         default: {
-            bool pattern[] = {1, 0, 1, 0, 1, 0, 1, 0};
-            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+            memcpy(redBtn.LEDOut.pattern, pattern_FA, pattern_size);
             break;
           }
       }
@@ -182,12 +184,12 @@ void loop()
           redBtn.pressed = false;
           if (current_status == 2) {
             current_status = 0;
-            bool pattern[] = {0, 0, 0, 0, 0, 0, 0, 0};
-            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+            memcpy(grnBtn.LEDOut.pattern, pattern_00, pattern_size);
+            memcpy(redBtn.LEDOut.pattern, pattern_00, pattern_size);
           } else {
             current_status = 2;
-            bool pattern[] = {1, 1, 1, 1, 1, 1, 1, 1};
-            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+            memcpy(grnBtn.LEDOut.pattern, pattern_00, pattern_size);
+            memcpy(redBtn.LEDOut.pattern, pattern_ON, pattern_size);
           }
         }
         if (grnBtn.pressed) {
@@ -195,12 +197,12 @@ void loop()
           grnBtn.pressed = false;
           if (current_status == 1) {
             current_status = 0;
-            bool pattern[] = {0, 0, 0, 0, 0, 0, 0, 0};
-            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+            memcpy(grnBtn.LEDOut.pattern, pattern_00, pattern_size);
+            memcpy(redBtn.LEDOut.pattern, pattern_00, pattern_size);
           } else {
             current_status = 1;
-            bool pattern[] = {1, 1, 1, 1, 0, 0, 0, 0};
-            memcpy(redBtn.LEDOut.pattern, pattern, pattern_size);
+            memcpy(grnBtn.LEDOut.pattern, pattern_ON, pattern_size);
+            memcpy(redBtn.LEDOut.pattern, pattern_00, pattern_size);
           }
         }
 
